@@ -1045,16 +1045,20 @@ int main(int argc, char** argv) {
         export_kernel_boot_props();
     }
 
+    /* Remove to avoid conflicting with systemd init */
     // Set up SELinux, including loading the SELinux policy if we're in the kernel domain.
-    selinux_initialize(is_first_stage);
+    if (0)
+	    selinux_initialize(is_first_stage);
 
     // If we're in the kernel domain, re-exec init to transition to the init domain now
     // that the SELinux policy has been loaded.
     if (is_first_stage) {
-        if (restorecon("/init") == -1) {
+	/* Run init second time regardless of errors */
+        /*if (restorecon("/init") == -1) {
             ERROR("restorecon failed: %s\n", strerror(errno));
             security_failure();
-        }
+        }*/
+	NOTICE("Run init again");
         char* path = argv[0];
         char* args[] = { path, const_cast<char*>("--second-stage"), nullptr };
         if (execv(path, args) == -1) {
